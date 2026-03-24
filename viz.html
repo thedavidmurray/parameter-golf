@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Parameter Golf — Design Space</title>
+<style>
+  body { background:#020617; color:#e2e8f0; font-family:monospace; padding:20px; margin:0 }
+  h1 { color:#22d3ee; font-size:18px; margin:0 0 4px }
+  p  { color:#64748b; font-size:12px; margin:0 0 16px }
+  svg { display:block }
+</style>
+</head>
+<body>
+<h1>Parameter Golf — Design Space Visualizer</h1>
+<p>Hover over cells/dots for details. Green frontier = current SOTA path.</p>
+<svg width="1100" height="960" xmlns="http://www.w3.org/2000/svg">
+  <!-- Chart 1: Progression -->
+  <rect x="10" y="10" width="530" height="280" fill="#0f172a" rx="8"/>
+<text x="275" y="24" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="monospace">BPB Progress (lower = better)</text>
+<line x1="70" y1="222.18711214357194" x2="520" y2="222.18711214357194" stroke="#1e293b" stroke-width="1"/>
+<text x="66" y="226.18711214357194" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.12</text>
+<line x1="70" y1="188.57788977295374" x2="520" y2="188.57788977295374" stroke="#1e293b" stroke-width="1"/>
+<text x="66" y="192.57788977295374" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.14</text>
+<line x1="70" y1="154.9686674023352" x2="520" y2="154.9686674023352" stroke="#1e293b" stroke-width="1"/>
+<text x="66" y="158.9686674023352" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.16</text>
+<line x1="70" y1="121.35944503171667" x2="520" y2="121.35944503171667" stroke="#1e293b" stroke-width="1"/>
+<text x="66" y="125.35944503171667" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.18</text>
+<line x1="70" y1="87.75022266109814" x2="520" y2="87.75022266109814" stroke="#1e293b" stroke-width="1"/>
+<text x="66" y="91.75022266109814" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.20</text>
+<line x1="70" y1="54.14100029047958" x2="520" y2="54.14100029047958" stroke="#1e293b" stroke-width="1"/>
+<text x="66" y="58.14100029047958" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.22</text>
+<circle cx="70.0" cy="46.8" r="4" fill="rgb(203,90,72)" opacity="0.7">
+  <title>Naive Baseline: 1.2244 BPB (2026-03-18)</title>
+</circle>
+<circle cx="70.0" cy="54.6" r="4" fill="rgb(197,94,73)" opacity="0.7">
+  <title>FP16 Tied Embedding + LR/Warmdown Tuning: 1.2197 BPB (2026-03-18)</title>
+</circle>
+<circle cx="70.0" cy="49.2" r="4" fill="rgb(202,91,72)" opacity="0.7">
+  <title>Lower LR: 1.2230 BPB (2026-03-18)</title>
+</circle>
+<circle cx="160.0" cy="99.7" r="4" fill="rgb(160,117,77)" opacity="0.7">
+  <title>LoRA TTT: 1.1929 BPB (2026-03-19)</title>
+</circle>
+<circle cx="160.0" cy="78.1" r="4" fill="rgb(178,106,75)" opacity="0.7">
+  <title>Long Context Seq2048 v2: 1.2058 BPB (2026-03-19)</title>
+</circle>
+<circle cx="160.0" cy="63.0" r="4" fill="rgb(190,98,74)" opacity="0.7">
+  <title>10L Mixed Precision: 1.2147 BPB (2026-03-19)</title>
+</circle>
+<circle cx="160.0" cy="149.9" r="4" fill="rgb(120,142,83)" opacity="0.7">
+  <title>Mixed Quant (int6 blocks + int8 embeddings) + Sliding Window Eval, val_bpb=1.1630: 1.1630 BPB (2026-03-19)</title>
+</circle>
+<circle cx="160.0" cy="157.3" r="4" fill="rgb(114,146,83)" opacity="0.7">
+  <title>10L Int6 QAT + Zstd MLP2.6x Muon0.99 Sliding Window: 1.1586 BPB (2026-03-19)</title>
+</circle>
+<circle cx="160.0" cy="100.4" r="4" fill="rgb(160,117,77)" opacity="0.7">
+  <title>Sliding Window Eval (stride=64): 1.1925 BPB (2026-03-19)</title>
+</circle>
+<circle cx="160.0" cy="85.3" r="4" fill="rgb(172,109,76)" opacity="0.7">
+  <title>Training Opt Seq4096 v1: 1.2014 BPB (2026-03-19)</title>
+</circle>
+<circle cx="250.0" cy="171.5" r="4" fill="rgb(102,153,85)" opacity="0.7">
+  <title>2026-03-19_MLP3x_QAT_Int6_SlidingWindow: 1.1502 BPB (2026-03-20)</title>
+</circle>
+<circle cx="250.0" cy="159.3" r="4" fill="rgb(112,147,84)" opacity="0.7">
+  <title>Int6 MLP3x Sliding Window: 1.1574 BPB (2026-03-20)</title>
+</circle>
+<circle cx="250.0" cy="204.2" r="4" fill="rgb(75,170,88)" opacity="0.7">
+  <title>11L + Efficient Partial XSA + FA3 + SWA/120 (val_bpb: 1.1307): 1.1307 BPB (2026-03-20)</title>
+</circle>
+<circle cx="250.0" cy="178.8" r="4" fill="rgb(96,157,86)" opacity="0.7">
+  <title>Int6 MLP3x + SmearGate + BigramHash + OrthoInit + Muon WD + SWA: 1.1458 BPB (2026-03-20)</title>
+</circle>
+<circle cx="340.0" cy="210.3" r="4" fill="rgb(71,173,89)" opacity="0.7">
+  <title>Record: 11L XSA + EMA + Int6 MLP3x + WD=0.04: 1.1271 BPB (2026-03-21)</title>
+</circle>
+<circle cx="340.0" cy="214.0" r="4" fill="rgb(67,175,89)" opacity="0.7">
+  <title>Record: 11L Partial RoPE + LN Scale + EMA + XSA4: 1.1248 BPB (2026-03-21)</title>
+</circle>
+<circle cx="430.0" cy="217.5" r="4" fill="rgb(65,177,90)" opacity="0.7">
+  <title>Record: 11L EMA + GPTQ-lite + warmdown3500 + QAT@0.15: 1.1228 BPB (2026-03-22)</title>
+</circle>
+<circle cx="520.0" cy="223.2" r="4" fill="rgb(60,180,90)" opacity="0.7">
+  <title>LeakyReLU² + Legal Score-First TTT + Parallel Muon: 1.1194 BPB (2026-03-23)</title>
+</circle>
+<polyline points="70.0,46.8 70.0,54.6 160.0,99.7 160.0,149.9 160.0,157.3 250.0,171.5 250.0,204.2 340.0,210.3 340.0,214.0 430.0,217.5 520.0,223.2" fill="none" stroke="#22d3ee" stroke-width="2" stroke-dasharray="4,2"/>
+<circle cx="70.0" cy="46.8" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: Naive Baseline: 1.2244 BPB</title>
+</circle>
+<circle cx="70.0" cy="54.6" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: FP16 Tied Embedding + LR/Warmdown Tuning: 1.2197 BPB</title>
+</circle>
+<circle cx="160.0" cy="99.7" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: LoRA TTT: 1.1929 BPB</title>
+</circle>
+<circle cx="160.0" cy="149.9" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: Mixed Quant (int6 blocks + int8 embeddings) + Sliding Window Eval, val_bpb=1.1630: 1.1630 BPB</title>
+</circle>
+<circle cx="160.0" cy="157.3" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: 10L Int6 QAT + Zstd MLP2.6x Muon0.99 Sliding Window: 1.1586 BPB</title>
+</circle>
+<circle cx="250.0" cy="171.5" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: 2026-03-19_MLP3x_QAT_Int6_SlidingWindow: 1.1502 BPB</title>
+</circle>
+<circle cx="250.0" cy="204.2" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: 11L + Efficient Partial XSA + FA3 + SWA/120 (val_bpb: 1.1307): 1.1307 BPB</title>
+</circle>
+<circle cx="340.0" cy="210.3" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: Record: 11L XSA + EMA + Int6 MLP3x + WD=0.04: 1.1271 BPB</title>
+</circle>
+<circle cx="340.0" cy="214.0" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: Record: 11L Partial RoPE + LN Scale + EMA + XSA4: 1.1248 BPB</title>
+</circle>
+<circle cx="430.0" cy="217.5" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: Record: 11L EMA + GPTQ-lite + warmdown3500 + QAT@0.15: 1.1228 BPB</title>
+</circle>
+<circle cx="520.0" cy="223.2" r="6" fill="#22d3ee" stroke="#0f172a" stroke-width="1.5">
+  <title>SOTA: LeakyReLU² + Legal Score-First TTT + Parallel Muon: 1.1194 BPB</title>
+</circle>
+<line x1="70" y1="30" x2="70" y2="240" stroke="#334155" stroke-width="1"/>
+<line x1="70" y1="240" x2="520" y2="240" stroke="#334155" stroke-width="1"/>
+<text x="70.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-18</text>
+<text x="70.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-18</text>
+<text x="160.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-19</text>
+<text x="160.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-19</text>
+<text x="160.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-19</text>
+<text x="250.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-20</text>
+<text x="250.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-20</text>
+<text x="340.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-21</text>
+<text x="340.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-21</text>
+<text x="430.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-22</text>
+<text x="520.0" y="254" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">03-23</text>
+
+  <!-- Chart 2: Quant surface -->
+  <rect x="560" y="10" width="530" height="280" fill="#0f172a" rx="8"/>
+<text x="825" y="24" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="monospace">Quant Tradeoff Surface</text>
+<text x="825" y="36" text-anchor="middle" fill="#64748b" font-size="10" font-family="monospace">Effective params reachable at each quantization level within 16MB</text>
+<line x1="615" y1="202.0" x2="1070" y2="202.0" stroke="#1e293b" stroke-width="1"/>
+<text x="611" y="206.0" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.10</text>
+<line x1="615" y1="164.0" x2="1070" y2="164.0" stroke="#1e293b" stroke-width="1"/>
+<text x="611" y="168.0" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.15</text>
+<line x1="615" y1="126.0" x2="1070" y2="126.0" stroke="#1e293b" stroke-width="1"/>
+<text x="611" y="130.0" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.20</text>
+<line x1="615" y1="88.0" x2="1070" y2="88.0" stroke="#1e293b" stroke-width="1"/>
+<text x="611" y="92.0" text-anchor="end" fill="#64748b" font-size="10" font-family="monospace">1.25</text>
+<circle cx="615.0" cy="250.4" r="8" fill="rgb(34,197,94)" stroke="#0f172a" stroke-width="1.5">
+  <title>int4: 34.4M params -> predicted 1.036 BPB</title>
+</circle>
+<text x="615.0" y="236.4" text-anchor="middle" fill="rgb(34,197,94)" font-size="10" font-family="monospace">int4</text>
+<text x="615.0" y="270.4" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="monospace">34M</text>
+<text x="615.0" y="280.4" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">1.036</text>
+<circle cx="728.8" cy="254.2" r="8" fill="rgb(34,197,94)" stroke="#0f172a" stroke-width="1.5">
+  <title>int5: 27.5M params -> predicted 1.031 BPB</title>
+</circle>
+<text x="728.8" y="240.2" text-anchor="middle" fill="rgb(34,197,94)" font-size="10" font-family="monospace">int5</text>
+<text x="728.8" y="274.2" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="monospace">27M</text>
+<text x="728.8" y="284.2" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">1.031</text>
+<circle cx="842.5" cy="210.9" r="8" fill="rgb(34,197,94)" stroke="#0f172a" stroke-width="1.5">
+  <title>int6: 22.9M params -> predicted 1.088 BPB</title>
+</circle>
+<text x="842.5" y="196.9" text-anchor="middle" fill="rgb(34,197,94)" font-size="10" font-family="monospace">int6</text>
+<text x="842.5" y="230.9" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="monospace">23M</text>
+<text x="842.5" y="240.9" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">1.088</text>
+<circle cx="956.2" cy="158.5" r="8" fill="rgb(112,147,84)" stroke="#0f172a" stroke-width="1.5">
+  <title>int7: 19.6M params -> predicted 1.157 BPB</title>
+</circle>
+<text x="956.2" y="144.5" text-anchor="middle" fill="rgb(112,147,84)" font-size="10" font-family="monospace">int7</text>
+<text x="956.2" y="178.5" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="monospace">20M</text>
+<text x="956.2" y="188.5" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">1.157</text>
+<circle cx="1070.0" cy="112.3" r="8" fill="rgb(195,95,73)" stroke="#0f172a" stroke-width="1.5">
+  <title>int8: 17.2M params -> predicted 1.218 BPB</title>
+</circle>
+<text x="1070.0" y="98.3" text-anchor="middle" fill="rgb(195,95,73)" font-size="10" font-family="monospace">int8</text>
+<text x="1070.0" y="132.3" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="monospace">17M</text>
+<text x="1070.0" y="142.3" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">1.218</text>
+<polyline points="615.0,250.4 728.8,254.2 842.5,210.9 956.2,158.5 1070.0,112.3" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="3,2"/>
+<circle cx="728.8" cy="254.2" r="13" fill="none" stroke="#22d3ee" stroke-width="2"/>
+<text x="572" y="145" text-anchor="middle" fill="#64748b" font-size="11" font-family="monospace" transform="rotate(-90,572,145)">Predicted BPB</text>
+<text x="842" y="280" text-anchor="middle" fill="#64748b" font-size="11" font-family="monospace">bits per param</text>
+<line x1="615" y1="50" x2="615" y2="240" stroke="#334155" stroke-width="1"/>
+<line x1="615" y1="240" x2="1070" y2="240" stroke="#334155" stroke-width="1"/>
+
+  <!-- Chart 3: Architecture surface (full width) -->
+  <rect x="10" y="310" width="1080" height="640" fill="#0f172a" rx="8"/>
+<text x="550" y="324" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="monospace">Architecture Budget Surface (vocab=1024)</text>
+<text x="550" y="336" text-anchor="middle" fill="#64748b" font-size="10" font-family="monospace">Green=fits int8 | Yellow=fits int6 only | Red=over budget</text>
+<text x="567" y="942" text-anchor="middle" fill="#64748b" font-size="11" font-family="monospace">model_dim</text>
+<text x="22" y="620" text-anchor="middle" fill="#64748b" font-size="11" font-family="monospace" transform="rotate(-90,22,620)">layers</text>
+<rect x="65.0" y="860.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>6L x 256d: 3.0M params | int8:2.9MB int6:2.2MB</title>
+</rect>
+<text x="115.2" y="884.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">3M</text>
+<rect x="165.5" y="860.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>6L x 320d: 4.6M params | int8:4.3MB int6:3.3MB</title>
+</rect>
+<text x="215.8" y="884.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">5M</text>
+<rect x="266.0" y="860.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>6L x 384d: 6.6M params | int8:6.1MB int6:4.6MB</title>
+</rect>
+<text x="316.2" y="884.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">7M</text>
+<rect x="366.5" y="860.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>6L x 448d: 8.9M params | int8:8.3MB int6:6.2MB</title>
+</rect>
+<text x="416.8" y="884.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">9M</text>
+<rect x="467.0" y="860.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>6L x 512d: 11.6M params | int8:10.7MB int6:8.0MB</title>
+</rect>
+<text x="517.2" y="884.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">12M</text>
+<rect x="567.5" y="860.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>6L x 576d: 14.5M params | int8:13.5MB int6:10.1MB</title>
+</rect>
+<text x="617.8" y="884.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">15M</text>
+<rect x="668.0" y="860.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>6L x 640d: 17.9M params | int8:16.5MB int6:12.4MB</title>
+</rect>
+<text x="718.2" y="884.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">18M</text>
+<rect x="768.5" y="860.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>6L x 704d: 21.6M params | int8:19.9MB int6:15.0MB</title>
+</rect>
+<text x="818.8" y="884.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">22M</text>
+<rect x="869.0" y="860.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>6L x 768d: 25.6M params | int8:23.6MB int6:17.7MB</title>
+</rect>
+<text x="919.2" y="884.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">26M</text>
+<rect x="969.5" y="860.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>6L x 832d: 30.0M params | int8:27.6MB int6:20.8MB</title>
+</rect>
+<text x="1019.8" y="884.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">30M</text>
+<rect x="65.0" y="820.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>7L x 256d: 3.5M params | int8:3.3MB int6:2.5MB</title>
+</rect>
+<text x="115.2" y="844.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">3M</text>
+<rect x="165.5" y="820.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>7L x 320d: 5.4M params | int8:5.0MB int6:3.8MB</title>
+</rect>
+<text x="215.8" y="844.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">5M</text>
+<rect x="266.0" y="820.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>7L x 384d: 7.6M params | int8:7.1MB int6:5.4MB</title>
+</rect>
+<text x="316.2" y="844.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">8M</text>
+<rect x="366.5" y="820.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>7L x 448d: 10.3M params | int8:9.6MB int6:7.2MB</title>
+</rect>
+<text x="416.8" y="844.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">10M</text>
+<rect x="467.0" y="820.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>7L x 512d: 13.4M params | int8:12.4MB int6:9.3MB</title>
+</rect>
+<text x="517.2" y="844.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">13M</text>
+<rect x="567.5" y="820.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>7L x 576d: 16.9M params | int8:15.6MB int6:11.7MB</title>
+</rect>
+<text x="617.8" y="844.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">17M</text>
+<rect x="668.0" y="820.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>7L x 640d: 20.8M params | int8:19.2MB int6:14.4MB</title>
+</rect>
+<text x="718.2" y="844.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">21M</text>
+<rect x="768.5" y="820.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>7L x 704d: 25.0M params | int8:23.1MB int6:17.4MB</title>
+</rect>
+<text x="818.8" y="844.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">25M</text>
+<rect x="869.0" y="820.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>7L x 768d: 29.7M params | int8:27.4MB int6:20.6MB</title>
+</rect>
+<text x="919.2" y="844.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">30M</text>
+<rect x="969.5" y="820.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>7L x 832d: 34.8M params | int8:32.1MB int6:24.1MB</title>
+</rect>
+<text x="1019.8" y="844.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">35M</text>
+<rect x="65.0" y="780.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>8L x 256d: 3.9M params | int8:3.7MB int6:2.8MB</title>
+</rect>
+<text x="115.2" y="804.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">4M</text>
+<rect x="165.5" y="780.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>8L x 320d: 6.1M params | int8:5.7MB int6:4.3MB</title>
+</rect>
+<text x="215.8" y="804.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">6M</text>
+<rect x="266.0" y="780.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>8L x 384d: 8.7M params | int8:8.1MB int6:6.1MB</title>
+</rect>
+<text x="316.2" y="804.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">9M</text>
+<rect x="366.5" y="780.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>8L x 448d: 11.7M params | int8:10.9MB int6:8.2MB</title>
+</rect>
+<text x="416.8" y="804.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">12M</text>
+<rect x="467.0" y="780.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>8L x 512d: 15.2M params | int8:14.1MB int6:10.6MB</title>
+</rect>
+<text x="517.2" y="804.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">15M</text>
+<rect x="567.5" y="780.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>8L x 576d: 19.2M params | int8:17.8MB int6:13.3MB</title>
+</rect>
+<text x="617.8" y="804.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">19M</text>
+<rect x="668.0" y="780.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>8L x 640d: 23.6M params | int8:21.8MB int6:16.4MB</title>
+</rect>
+<text x="718.2" y="804.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">24M</text>
+<rect x="768.5" y="780.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>8L x 704d: 28.5M params | int8:26.3MB int6:19.8MB</title>
+</rect>
+<text x="818.8" y="804.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">29M</text>
+<rect x="869.0" y="780.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>8L x 768d: 33.9M params | int8:31.3MB int6:23.5MB</title>
+</rect>
+<text x="919.2" y="804.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">34M</text>
+<rect x="969.5" y="780.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>8L x 832d: 39.7M params | int8:36.6MB int6:27.5MB</title>
+</rect>
+<text x="1019.8" y="804.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">40M</text>
+<rect x="65.0" y="740.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>9L x 256d: 4.4M params | int8:4.2MB int6:3.1MB</title>
+</rect>
+<text x="115.2" y="764.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">4M</text>
+<rect x="165.5" y="740.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>9L x 320d: 6.8M params | int8:6.4MB int6:4.8MB</title>
+</rect>
+<text x="215.8" y="764.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">7M</text>
+<rect x="266.0" y="740.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>9L x 384d: 9.7M params | int8:9.0MB int6:6.8MB</title>
+</rect>
+<text x="316.2" y="764.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">10M</text>
+<rect x="366.5" y="740.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>9L x 448d: 13.1M params | int8:12.2MB int6:9.2MB</title>
+</rect>
+<text x="416.8" y="764.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">13M</text>
+<rect x="467.0" y="740.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>9L x 512d: 17.1M params | int8:15.8MB int6:11.9MB</title>
+</rect>
+<text x="517.2" y="764.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">17M</text>
+<rect x="567.5" y="740.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>9L x 576d: 21.5M params | int8:19.9MB int6:15.0MB</title>
+</rect>
+<text x="617.8" y="764.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">22M</text>
+<rect x="668.0" y="740.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>9L x 640d: 26.5M params | int8:24.5MB int6:18.4MB</title>
+</rect>
+<text x="718.2" y="764.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">26M</text>
+<rect x="768.5" y="740.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>9L x 704d: 32.0M params | int8:29.5MB int6:22.2MB</title>
+</rect>
+<text x="818.8" y="764.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">32M</text>
+<rect x="869.0" y="740.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>9L x 768d: 38.0M params | int8:35.1MB int6:26.3MB</title>
+</rect>
+<text x="919.2" y="764.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">38M</text>
+<rect x="969.5" y="740.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>9L x 832d: 44.5M params | int8:41.1MB int6:30.8MB</title>
+</rect>
+<text x="1019.8" y="764.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">45M</text>
+<rect x="65.0" y="700.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>10L x 256d: 4.9M params | int8:4.6MB int6:3.5MB</title>
+</rect>
+<text x="115.2" y="724.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">5M</text>
+<rect x="165.5" y="700.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>10L x 320d: 7.5M params | int8:7.0MB int6:5.3MB</title>
+</rect>
+<text x="215.8" y="724.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">8M</text>
+<rect x="266.0" y="700.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>10L x 384d: 10.7M params | int8:10.0MB int6:7.5MB</title>
+</rect>
+<text x="316.2" y="724.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">11M</text>
+<rect x="366.5" y="700.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>10L x 448d: 14.5M params | int8:13.5MB int6:10.2MB</title>
+</rect>
+<text x="416.8" y="724.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">15M</text>
+<rect x="467.0" y="700.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>10L x 512d: 18.9M params | int8:17.5MB int6:13.2MB</title>
+</rect>
+<text x="517.2" y="724.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">19M</text>
+<rect x="567.5" y="700.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>10L x 576d: 23.9M params | int8:22.1MB int6:16.6MB</title>
+</rect>
+<text x="617.8" y="724.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">24M</text>
+<rect x="668.0" y="700.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>10L x 640d: 29.4M params | int8:27.2MB int6:20.4MB</title>
+</rect>
+<text x="718.2" y="724.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">29M</text>
+<rect x="768.5" y="700.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>10L x 704d: 35.5M params | int8:32.8MB int6:24.6MB</title>
+</rect>
+<text x="818.8" y="724.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">35M</text>
+<rect x="869.0" y="700.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>10L x 768d: 42.1M params | int8:38.9MB int6:29.2MB</title>
+</rect>
+<text x="919.2" y="724.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">42M</text>
+<rect x="969.5" y="700.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>10L x 832d: 49.4M params | int8:45.6MB int6:34.2MB</title>
+</rect>
+<text x="1019.8" y="724.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">49M</text>
+<rect x="65.0" y="660.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>11L x 256d: 5.3M params | int8:5.0MB int6:3.8MB</title>
+</rect>
+<text x="115.2" y="684.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">5M</text>
+<rect x="165.5" y="660.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>11L x 320d: 8.2M params | int8:7.7MB int6:5.8MB</title>
+</rect>
+<text x="215.8" y="684.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">8M</text>
+<rect x="266.0" y="660.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>11L x 384d: 11.8M params | int8:11.0MB int6:8.3MB</title>
+</rect>
+<text x="316.2" y="684.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">12M</text>
+<rect x="366.5" y="660.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>11L x 448d: 15.9M params | int8:14.8MB int6:11.1MB</title>
+</rect>
+<text x="416.8" y="684.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">16M</text>
+<rect x="467.0" y="660.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>11L x 512d: 20.7M params | int8:19.2MB int6:14.4MB</title>
+</rect>
+<text x="517.2" y="684.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">21M</text>
+<rect x="567.5" y="660.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>11L x 576d: 26.2M params | int8:24.2MB int6:18.2MB</title>
+</rect>
+<text x="617.8" y="684.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">26M</text>
+<rect x="668.0" y="660.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>11L x 640d: 32.2M params | int8:29.8MB int6:22.4MB</title>
+</rect>
+<text x="718.2" y="684.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">32M</text>
+<rect x="768.5" y="660.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>11L x 704d: 38.9M params | int8:36.0MB int6:27.0MB</title>
+</rect>
+<text x="818.8" y="684.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">39M</text>
+<rect x="869.0" y="660.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>11L x 768d: 46.3M params | int8:42.7MB int6:32.1MB</title>
+</rect>
+<text x="919.2" y="684.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">46M</text>
+<rect x="969.5" y="660.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>11L x 832d: 54.2M params | int8:50.0MB int6:37.6MB</title>
+</rect>
+<text x="1019.8" y="684.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">54M</text>
+<rect x="65.0" y="620.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>12L x 256d: 5.8M params | int8:5.5MB int6:4.1MB</title>
+</rect>
+<text x="115.2" y="644.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">6M</text>
+<rect x="165.5" y="620.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>12L x 320d: 9.0M params | int8:8.4MB int6:6.3MB</title>
+</rect>
+<text x="215.8" y="644.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">9M</text>
+<rect x="266.0" y="620.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>12L x 384d: 12.8M params | int8:11.9MB int6:9.0MB</title>
+</rect>
+<text x="316.2" y="644.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">13M</text>
+<rect x="366.5" y="620.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>12L x 448d: 17.4M params | int8:16.1MB int6:12.1MB</title>
+</rect>
+<text x="416.8" y="644.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">17M</text>
+<rect x="467.0" y="620.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>12L x 512d: 22.6M params | int8:20.9MB int6:15.7MB</title>
+</rect>
+<text x="517.2" y="644.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">23M</text>
+<rect x="567.5" y="620.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>12L x 576d: 28.5M params | int8:26.4MB int6:19.8MB</title>
+</rect>
+<text x="617.8" y="644.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">29M</text>
+<rect x="668.0" y="620.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>12L x 640d: 35.1M params | int8:32.5MB int6:24.4MB</title>
+</rect>
+<text x="718.2" y="644.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">35M</text>
+<rect x="768.5" y="620.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>12L x 704d: 42.4M params | int8:39.2MB int6:29.4MB</title>
+</rect>
+<text x="818.8" y="644.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">42M</text>
+<rect x="869.0" y="620.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>12L x 768d: 50.4M params | int8:46.5MB int6:34.9MB</title>
+</rect>
+<text x="919.2" y="644.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">50M</text>
+<rect x="969.5" y="620.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>12L x 832d: 59.1M params | int8:54.5MB int6:40.9MB</title>
+</rect>
+<text x="1019.8" y="644.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">59M</text>
+<rect x="65.0" y="580.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>13L x 256d: 6.2M params | int8:5.9MB int6:4.5MB</title>
+</rect>
+<text x="115.2" y="604.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">6M</text>
+<rect x="165.5" y="580.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>13L x 320d: 9.7M params | int8:9.1MB int6:6.8MB</title>
+</rect>
+<text x="215.8" y="604.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">10M</text>
+<rect x="266.0" y="580.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>13L x 384d: 13.8M params | int8:12.9MB int6:9.7MB</title>
+</rect>
+<text x="316.2" y="604.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">14M</text>
+<rect x="366.5" y="580.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>13L x 448d: 18.8M params | int8:17.4MB int6:13.1MB</title>
+</rect>
+<text x="416.8" y="604.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">19M</text>
+<rect x="467.0" y="580.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>13L x 512d: 24.4M params | int8:22.6MB int6:17.0MB</title>
+</rect>
+<text x="517.2" y="604.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">24M</text>
+<rect x="567.5" y="580.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>13L x 576d: 30.8M params | int8:28.5MB int6:21.4MB</title>
+</rect>
+<text x="617.8" y="604.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">31M</text>
+<rect x="668.0" y="580.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>13L x 640d: 38.0M params | int8:35.1MB int6:26.4MB</title>
+</rect>
+<text x="718.2" y="604.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">38M</text>
+<rect x="768.5" y="580.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>13L x 704d: 45.9M params | int8:42.4MB int6:31.8MB</title>
+</rect>
+<text x="818.8" y="604.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">46M</text>
+<rect x="869.0" y="580.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>13L x 768d: 54.5M params | int8:50.3MB int6:37.8MB</title>
+</rect>
+<text x="919.2" y="604.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">55M</text>
+<rect x="969.5" y="580.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>13L x 832d: 63.9M params | int8:59.0MB int6:44.3MB</title>
+</rect>
+<text x="1019.8" y="604.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">64M</text>
+<rect x="65.0" y="540.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>14L x 256d: 6.7M params | int8:6.3MB int6:4.8MB</title>
+</rect>
+<text x="115.2" y="564.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">7M</text>
+<rect x="165.5" y="540.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>14L x 320d: 10.4M params | int8:9.7MB int6:7.3MB</title>
+</rect>
+<text x="215.8" y="564.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">10M</text>
+<rect x="266.0" y="540.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>14L x 384d: 14.9M params | int8:13.9MB int6:10.4MB</title>
+</rect>
+<text x="316.2" y="564.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">15M</text>
+<rect x="366.5" y="540.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>14L x 448d: 20.2M params | int8:18.7MB int6:14.1MB</title>
+</rect>
+<text x="416.8" y="564.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">20M</text>
+<rect x="467.0" y="540.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>14L x 512d: 26.3M params | int8:24.3MB int6:18.3MB</title>
+</rect>
+<text x="517.2" y="564.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">26M</text>
+<rect x="567.5" y="540.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>14L x 576d: 33.2M params | int8:30.7MB int6:23.1MB</title>
+</rect>
+<text x="617.8" y="564.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">33M</text>
+<rect x="668.0" y="540.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>14L x 640d: 40.9M params | int8:37.8MB int6:28.4MB</title>
+</rect>
+<text x="718.2" y="564.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">41M</text>
+<rect x="768.5" y="540.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>14L x 704d: 49.4M params | int8:45.6MB int6:34.2MB</title>
+</rect>
+<text x="818.8" y="564.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">49M</text>
+<rect x="869.0" y="540.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>14L x 768d: 58.7M params | int8:54.2MB int6:40.7MB</title>
+</rect>
+<text x="919.2" y="564.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">59M</text>
+<rect x="969.5" y="540.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>14L x 832d: 68.8M params | int8:63.5MB int6:47.6MB</title>
+</rect>
+<text x="1019.8" y="564.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">69M</text>
+<rect x="65.0" y="500.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>15L x 256d: 7.2M params | int8:6.8MB int6:5.1MB</title>
+</rect>
+<text x="115.2" y="524.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">7M</text>
+<rect x="165.5" y="500.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>15L x 320d: 11.1M params | int8:10.4MB int6:7.8MB</title>
+</rect>
+<text x="215.8" y="524.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">11M</text>
+<rect x="266.0" y="500.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>15L x 384d: 15.9M params | int8:14.8MB int6:11.2MB</title>
+</rect>
+<text x="316.2" y="524.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">16M</text>
+<rect x="366.5" y="500.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>15L x 448d: 21.6M params | int8:20.0MB int6:15.1MB</title>
+</rect>
+<text x="416.8" y="524.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">22M</text>
+<rect x="467.0" y="500.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>15L x 512d: 28.1M params | int8:26.0MB int6:19.6MB</title>
+</rect>
+<text x="517.2" y="524.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">28M</text>
+<rect x="567.5" y="500.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>15L x 576d: 35.5M params | int8:32.8MB int6:24.7MB</title>
+</rect>
+<text x="617.8" y="524.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">35M</text>
+<rect x="668.0" y="500.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>15L x 640d: 43.7M params | int8:40.4MB int6:30.4MB</title>
+</rect>
+<text x="718.2" y="524.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">44M</text>
+<rect x="768.5" y="500.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>15L x 704d: 52.8M params | int8:48.8MB int6:36.6MB</title>
+</rect>
+<text x="818.8" y="524.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">53M</text>
+<rect x="869.0" y="500.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>15L x 768d: 62.8M params | int8:58.0MB int6:43.5MB</title>
+</rect>
+<text x="919.2" y="524.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">63M</text>
+<rect x="969.5" y="500.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>15L x 832d: 73.6M params | int8:67.9MB int6:51.0MB</title>
+</rect>
+<text x="1019.8" y="524.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">74M</text>
+<rect x="65.0" y="460.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>16L x 256d: 7.6M params | int8:7.2MB int6:5.4MB</title>
+</rect>
+<text x="115.2" y="484.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">8M</text>
+<rect x="165.5" y="460.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>16L x 320d: 11.8M params | int8:11.1MB int6:8.3MB</title>
+</rect>
+<text x="215.8" y="484.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">12M</text>
+<rect x="266.0" y="460.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>16L x 384d: 16.9M params | int8:15.8MB int6:11.9MB</title>
+</rect>
+<text x="316.2" y="484.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">17M</text>
+<rect x="366.5" y="460.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>16L x 448d: 23.0M params | int8:21.3MB int6:16.1MB</title>
+</rect>
+<text x="416.8" y="484.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">23M</text>
+<rect x="467.0" y="460.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>16L x 512d: 29.9M params | int8:27.7MB int6:20.9MB</title>
+</rect>
+<text x="517.2" y="484.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">30M</text>
+<rect x="567.5" y="460.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>16L x 576d: 37.8M params | int8:35.0MB int6:26.3MB</title>
+</rect>
+<text x="617.8" y="484.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">38M</text>
+<rect x="668.0" y="460.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>16L x 640d: 46.6M params | int8:43.1MB int6:32.4MB</title>
+</rect>
+<text x="718.2" y="484.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">47M</text>
+<rect x="768.5" y="460.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>16L x 704d: 56.3M params | int8:52.0MB int6:39.1MB</title>
+</rect>
+<text x="818.8" y="484.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">56M</text>
+<rect x="869.0" y="460.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>16L x 768d: 66.9M params | int8:61.8MB int6:46.4MB</title>
+</rect>
+<text x="919.2" y="484.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">67M</text>
+<rect x="969.5" y="460.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>16L x 832d: 78.5M params | int8:72.4MB int6:54.4MB</title>
+</rect>
+<text x="1019.8" y="484.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">78M</text>
+<rect x="65.0" y="420.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>17L x 256d: 8.1M params | int8:7.6MB int6:5.8MB</title>
+</rect>
+<text x="115.2" y="444.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">8M</text>
+<rect x="165.5" y="420.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>17L x 320d: 12.5M params | int8:11.7MB int6:8.9MB</title>
+</rect>
+<text x="215.8" y="444.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">13M</text>
+<rect x="266.0" y="420.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>17L x 384d: 18.0M params | int8:16.7MB int6:12.6MB</title>
+</rect>
+<text x="316.2" y="444.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">18M</text>
+<rect x="366.5" y="420.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>17L x 448d: 24.4M params | int8:22.6MB int6:17.0MB</title>
+</rect>
+<text x="416.8" y="444.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">24M</text>
+<rect x="467.0" y="420.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>17L x 512d: 31.8M params | int8:29.4MB int6:22.1MB</title>
+</rect>
+<text x="517.2" y="444.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">32M</text>
+<rect x="567.5" y="420.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>17L x 576d: 40.1M params | int8:37.1MB int6:27.9MB</title>
+</rect>
+<text x="617.8" y="444.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">40M</text>
+<rect x="668.0" y="420.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>17L x 640d: 49.5M params | int8:45.7MB int6:34.3MB</title>
+</rect>
+<text x="718.2" y="444.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">49M</text>
+<rect x="768.5" y="420.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>17L x 704d: 59.8M params | int8:55.2MB int6:41.5MB</title>
+</rect>
+<text x="818.8" y="444.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">60M</text>
+<rect x="869.0" y="420.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>17L x 768d: 71.1M params | int8:65.6MB int6:49.3MB</title>
+</rect>
+<text x="919.2" y="444.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">71M</text>
+<rect x="969.5" y="420.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>17L x 832d: 83.3M params | int8:76.9MB int6:57.7MB</title>
+</rect>
+<text x="1019.8" y="444.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">83M</text>
+<rect x="65.0" y="380.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>18L x 256d: 8.5M params | int8:8.1MB int6:6.1MB</title>
+</rect>
+<text x="115.2" y="404.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">9M</text>
+<rect x="165.5" y="380.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>18L x 320d: 13.3M params | int8:12.4MB int6:9.4MB</title>
+</rect>
+<text x="215.8" y="404.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">13M</text>
+<rect x="266.0" y="380.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>18L x 384d: 19.0M params | int8:17.7MB int6:13.3MB</title>
+</rect>
+<text x="316.2" y="404.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">19M</text>
+<rect x="366.5" y="380.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>18L x 448d: 25.8M params | int8:24.0MB int6:18.0MB</title>
+</rect>
+<text x="416.8" y="404.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">26M</text>
+<rect x="467.0" y="380.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>18L x 512d: 33.6M params | int8:31.2MB int6:23.4MB</title>
+</rect>
+<text x="517.2" y="404.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">34M</text>
+<rect x="567.5" y="380.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>18L x 576d: 42.5M params | int8:39.3MB int6:29.5MB</title>
+</rect>
+<text x="617.8" y="404.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">42M</text>
+<rect x="668.0" y="380.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>18L x 640d: 52.3M params | int8:48.4MB int6:36.3MB</title>
+</rect>
+<text x="718.2" y="404.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">52M</text>
+<rect x="768.5" y="380.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>18L x 704d: 63.3M params | int8:58.4MB int6:43.9MB</title>
+</rect>
+<text x="818.8" y="404.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">63M</text>
+<rect x="869.0" y="380.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>18L x 768d: 75.2M params | int8:69.4MB int6:52.1MB</title>
+</rect>
+<text x="919.2" y="404.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">75M</text>
+<rect x="969.5" y="380.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>18L x 832d: 88.2M params | int8:81.4MB int6:61.1MB</title>
+</rect>
+<text x="1019.8" y="404.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">88M</text>
+<rect x="65.0" y="340.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>19L x 256d: 9.0M params | int8:8.5MB int6:6.4MB</title>
+</rect>
+<text x="115.2" y="364.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">9M</text>
+<rect x="165.5" y="340.0" width="99.5" height="39.0" fill="#166534" stroke="#22c55e" stroke-width="0.5" rx="1">
+  <title>19L x 320d: 14.0M params | int8:13.1MB int6:9.9MB</title>
+</rect>
+<text x="215.8" y="364.0" text-anchor="middle" fill="#4ade80" font-size="8" font-family="monospace">14M</text>
+<rect x="266.0" y="340.0" width="99.5" height="39.0" fill="#713f12" stroke="#f59e0b" stroke-width="0.5" rx="1">
+  <title>19L x 384d: 20.1M params | int8:18.7MB int6:14.1MB</title>
+</rect>
+<text x="316.2" y="364.0" text-anchor="middle" fill="#fbbf24" font-size="8" font-family="monospace">20M</text>
+<rect x="366.5" y="340.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>19L x 448d: 27.2M params | int8:25.3MB int6:19.0MB</title>
+</rect>
+<text x="416.8" y="364.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">27M</text>
+<rect x="467.0" y="340.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>19L x 512d: 35.5M params | int8:32.9MB int6:24.7MB</title>
+</rect>
+<text x="517.2" y="364.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">35M</text>
+<rect x="567.5" y="340.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>19L x 576d: 44.8M params | int8:41.4MB int6:31.1MB</title>
+</rect>
+<text x="617.8" y="364.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">45M</text>
+<rect x="668.0" y="340.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>19L x 640d: 55.2M params | int8:51.0MB int6:38.3MB</title>
+</rect>
+<text x="718.2" y="364.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">55M</text>
+<rect x="768.5" y="340.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>19L x 704d: 66.7M params | int8:61.6MB int6:46.3MB</title>
+</rect>
+<text x="818.8" y="364.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">67M</text>
+<rect x="869.0" y="340.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>19L x 768d: 79.3M params | int8:73.2MB int6:55.0MB</title>
+</rect>
+<text x="919.2" y="364.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">79M</text>
+<rect x="969.5" y="340.0" width="99.5" height="39.0" fill="#1e1e2e" stroke="#334155" stroke-width="0.5" rx="1">
+  <title>19L x 832d: 93.0M params | int8:85.9MB int6:64.4MB</title>
+</rect>
+<text x="1019.8" y="364.0" text-anchor="middle" fill="#475569" font-size="8" font-family="monospace">93M</text>
+<text x="115.2" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">256</text>
+<text x="215.8" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">320</text>
+<text x="316.2" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">384</text>
+<text x="416.8" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">448</text>
+<text x="517.2" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">512</text>
+<text x="617.8" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">576</text>
+<text x="718.2" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">640</text>
+<text x="818.8" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">704</text>
+<text x="919.2" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">768</text>
+<text x="1019.8" y="914" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">832</text>
+<text x="61" y="883.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">6</text>
+<text x="61" y="843.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">7</text>
+<text x="61" y="803.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">8</text>
+<text x="61" y="763.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">9</text>
+<text x="61" y="723.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">10</text>
+<text x="61" y="683.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">11</text>
+<text x="61" y="643.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">12</text>
+<text x="61" y="603.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">13</text>
+<text x="61" y="563.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">14</text>
+<text x="61" y="523.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">15</text>
+<text x="61" y="483.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">16</text>
+<text x="61" y="443.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">17</text>
+<text x="61" y="403.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">18</text>
+<text x="61" y="363.0" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">19</text>
+<circle cx="517.2" cy="760.0" r="6" fill="none" stroke="#f8fafc" stroke-width="1.5"/>
+<text x="525.2" y="756.0" fill="#f8fafc" font-size="9" font-family="monospace">baseline</text>
+</svg>
+
+<div style="margin-top:16px;font-size:11px;color:#475569">
+<strong style="color:#94a3b8">Reading the charts:</strong><br>
+<span style="color:#22c55e">■</span> Green cells = fits in int8 budget (~17M params max)<br>
+<span style="color:#f59e0b">■</span> Amber cells = fits in int6 budget only (~23M params max)<br>
+<span style="color:#475569">■</span> Dark cells = over budget entirely<br>
+<span style="color:#22d3ee">●</span> Cyan dots/line = SOTA frontier records<br><br>
+<strong style="color:#94a3b8">Key insight:</strong>
+Int6 quantization unlocks a whole new region of the architecture space (the amber zone) —
+especially 11–13 layers at 512d. The quant surface shows int6 is the sweet spot:
+the capacity gain outweighs the quantization penalty, but int5 and below likely hurt more than they help.
+</div>
+</body>
+</html>
