@@ -1,0 +1,12 @@
+{
+  "author": "thedavidmurray",
+  "github_id": "thedavidmurray",
+  "name": "LeakyReLU Baseline",
+  "blurb": "Swap relu^2 for leaky_relu(0.5)^2 in the MLP — one-line change on top of the NaiveBaseline config. Expected ~0.003 BPB improvement.",
+  "date": "2026-03-24T00:00:00Z",
+  "val_loss": null,
+  "val_bpb": null,
+  "bytes_total": null,
+  "bytes_code": null,
+  "status": "pending_h100_run"
+}
