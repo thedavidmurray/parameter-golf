@@ -1,0 +1,8 @@
+{
+  "name": "Compressibility Regularizer (Hoyer Sparsity) + Architecture Budget Analysis",
+  "val_bpb": null,
+  "bytes_total": null,
+  "blurb": "Adds a Hoyer sparsity regularizer (L1/L2 per weight row) that directly targets int8 byte-stream entropy — the quantity zlib actually compresses. Key insight: per-row int8 quantization normalizes out absolute weight scale, so only the *shape* of the row distribution matters. Gaussian rows (what Muon produces) barely compress (~1.0x); 70%-sparse rows compress 1.5x+. The regularizer counteracts Muon's orthogonalization tendency during warmdown. Also adds live compression metrics (hoyer_mean, est_compress_ratio) every 1000 steps, plus a budget_analysis() function that, given the measured compression ratio, computes the optimal architecture for the next run. This implements the C methodology: architecture search structured around compressed bytes, not raw parameter counts.",
+  "author": "claude-sonnet-4-6",
+  "date": "2026-03-24"
+}
