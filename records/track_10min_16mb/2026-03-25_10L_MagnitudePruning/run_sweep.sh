@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Run script for 11-layer magnitude pruning experiments.
+# Run script for 10-layer magnitude pruning experiments.
 #
-# Core question: does 11 layers + pruning beat 9 layers without pruning?
-# Pruning at threshold=0.10 gives 1.37x compression, fitting 11 layers in 16MB.
+# Core question: does 10 layers + pruning beat 9 layers without pruning?
+# Pruning at threshold=0.10 gives 1.24x actual compression, fitting 10 layers in 16MB (~15.2MB).
 #
 # Usage: bash run_sweep.sh [smoke|sweep|full8]
 
@@ -27,10 +27,10 @@ run() {
 mkdir -p logs
 
 if [ "$MODE" = "smoke" ]; then
-    # Quick 10-min run on 1xH100 to get a real BPB number.
-    # 11 layers, pruning=0.10, LeakyReLU^2.
-    run smoke_11L_prune010 \
-        NUM_LAYERS=11 \
+    # Full 10-min run on 8xH100 to get a real BPB number.
+    # 10 layers, pruning=0.10, LeakyReLU^2. Expected size: ~15.2MB.
+    run smoke_10L_prune010 \
+        NUM_LAYERS=10 \
         PRUNE_THRESHOLD=0.10 \
         VAL_LOSS_EVERY=500 \
         COMPRESSION_LOG_EVERY=1000
@@ -55,9 +55,9 @@ elif [ "$MODE" = "sweep" ]; then
         NUM_LAYERS=10 \
         PRUNE_THRESHOLD=0.10
 
-    # 11 layers + pruning (main hypothesis)
-    run sweep_11L_prune010 \
-        NUM_LAYERS=11 \
+    # 10 layers + pruning (main hypothesis)
+    run sweep_10L_prune010 \
+        NUM_LAYERS=10 \
         PRUNE_THRESHOLD=0.10
 
     echo ""
@@ -65,7 +65,7 @@ elif [ "$MODE" = "sweep" ]; then
     echo "  SWEEP SUMMARY"
     echo "========================================================"
     printf "  %-25s  %-10s  %-10s  %-12s\n" "run_id" "val_bpb" "zeros" "compress"
-    for id in sweep_9L_noPrune sweep_9L_prune010 sweep_10L_prune010 sweep_11L_prune010; do
+    for id in sweep_9L_noPrune sweep_9L_prune010 sweep_10L_prune010; do
         if [ -f "logs/${id}.log" ]; then
             BPB=$(grep "final_int8_zlib_roundtrip val_bpb" "logs/${id}.log" | tail -1 | grep -oP 'val_bpb:\K[0-9.]+' || echo "?")
             ZEROS=$(grep "magnitude_pruning" "logs/${id}.log" | grep -oP 'zeros=\K[0-9.]+' || echo "0.000")
@@ -77,11 +77,11 @@ elif [ "$MODE" = "sweep" ]; then
 elif [ "$MODE" = "full8" ]; then
     # Full 3-seed leaderboard run on 8xH100.
     NPROC=8
-    echo "Full 3-seed run: 11L + prune=0.10 + LeakyReLU^2"
+    echo "Full 3-seed run: 10L + prune=0.10 + LeakyReLU^2"
 
     for SEED in 1337 42 2025; do
-        run "full8_11L_prune010_seed${SEED}" \
-            NUM_LAYERS=11 \
+        run "full8_10L_prune010_seed${SEED}" \
+            NUM_LAYERS=10 \
             PRUNE_THRESHOLD=0.10 \
             SEED=$SEED
     done
@@ -91,7 +91,7 @@ elif [ "$MODE" = "full8" ]; then
     echo "  3-SEED RESULTS"
     echo "========================================================"
     for SEED in 1337 42 2025; do
-        ID="full8_11L_prune010_seed${SEED}"
+        ID="full8_10L_prune010_seed${SEED}"
         BPB=$(grep "final_int8_zlib_roundtrip val_bpb" "logs/${ID}.log" | tail -1 | grep -oP 'val_bpb:\K[0-9.]+' || echo "?")
         BYTES=$(grep "Total submission size int8+zlib" "logs/${ID}.log" | tail -1 | grep -oP '[0-9]+' | tail -1 || echo "?")
         echo "  seed=$SEED  val_bpb=$BPB  total_bytes=$BYTES"

@@ -1,23 +1,27 @@
 """
-11-Layer Model with Post-Training Magnitude Pruning
+10-Layer Model with Post-Training Magnitude Pruning
 ====================================================
 
 Core insight: post-training magnitude pruning zeroes out small weights before int8
 quantization. Per-row int8 normalizes by row max, so zeroed weights map to int8 zero
-regardless of scale — and runs of zeros compress extremely well with zlib.
+regardless of scale — and zlib compresses the resulting sparse byte stream well.
 
-  threshold=0.10: 27% zeros, 0.97% energy lost → 1.37x compression → 11 layers fit in 16MB
+  threshold=0.10: 27% zeros, 0.97% energy lost → 1.24x actual compression
 
-This gives 2 free extra layers over the 9-layer baseline at essentially no quality cost.
+At full training, Muon-orthogonalized weights compress at ~1.24x (not the ~1.37x seen
+at early training when weights are still near-random). At 1.24x, 10 layers fit comfortably
+in 16MB (~15.2MB), while 11 layers exceed it (~16.8MB). So we use 10 layers.
+
+This gives 1 free extra layer over the 9-layer baseline at essentially no quality cost.
 
 Changes from naive baseline:
-  1. NUM_LAYERS=11 (from 9) — enabled by improved compression ratio
+  1. NUM_LAYERS=10 (from 9) — one extra layer enabled by pruning compression
   2. Magnitude pruning (threshold=0.10) — zeros sub-threshold weights post-training
   3. LeakyReLU(0.5)² activation — empirically improves BPB ~0.003
 
 Key hyperparameters:
-  PRUNE_THRESHOLD       (default 0.10) threshold relative to row max. 0.10 = sweet spot.
-  NUM_LAYERS            (default 11)   set by budget_analysis given pruning compression.
+  PRUNE_THRESHOLD       (default 0.10) threshold relative to row max.
+  NUM_LAYERS            (default 10)   safe with 1.24x observed compression.
   COMPRESSION_LOG_EVERY (default 1000) steps between Hoyer/compression diagnostics.
 """
 
@@ -78,7 +82,7 @@ class Hyperparameters:
 
     # Model shape.
     vocab_size = int(os.environ.get("VOCAB_SIZE", 1024))
-    num_layers = int(os.environ.get("NUM_LAYERS", 11))
+    num_layers = int(os.environ.get("NUM_LAYERS", 10))
     num_kv_heads = int(os.environ.get("NUM_KV_HEADS", 4))
     model_dim = int(os.environ.get("MODEL_DIM", 512))
     num_heads = int(os.environ.get("NUM_HEADS", 8))
