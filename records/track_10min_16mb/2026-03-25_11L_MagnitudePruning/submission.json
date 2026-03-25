@@ -1,0 +1,13 @@
+{
+  "author": "thedavidmurray",
+  "github_id": "thedavidmurray",
+  "val_bpb": null,
+  "date": "2026-03-25",
+  "summary": "11 layers + post-training magnitude pruning (threshold=0.10) + LeakyReLU(0.5)^2",
+  "num_layers": 11,
+  "model_dim": 512,
+  "vocab_size": 1024,
+  "prune_threshold": 0.10,
+  "compression_ratio_measured": 1.369,
+  "status": "pending_h100_run"
+}
