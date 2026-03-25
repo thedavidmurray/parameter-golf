@@ -73,7 +73,7 @@ class Hyperparameters:
 
     # Training length.
     iterations = int(os.environ.get("ITERATIONS", 20000))
-    warmdown_iters = int(os.environ.get("WARMDOWN_ITERS", 1200))
+    warmdown_iters = int(os.environ.get("WARMDOWN_ITERS", 3000))
     warmup_steps = int(os.environ.get("WARMUP_STEPS", 20))
     train_batch_tokens = int(os.environ.get("TRAIN_BATCH_TOKENS", 524_288))
     train_seq_len = int(os.environ.get("TRAIN_SEQ_LEN", 1024))
@@ -106,6 +106,11 @@ class Hyperparameters:
     beta2 = float(os.environ.get("BETA2", 0.95))
     adam_eps = float(os.environ.get("ADAM_EPS", 1e-8))
     grad_clip_norm = float(os.environ.get("GRAD_CLIP_NORM", 0.0))
+
+    # Stochastic Weight Averaging: average model weights collected during warmdown for better convergence.
+    swa_enabled = bool(int(os.environ.get("SWA_ENABLED", "1")))
+    swa_start_frac = float(os.environ.get("SWA_START_FRAC", "0.4"))
+    swa_every = int(os.environ.get("SWA_EVERY", "50"))
 
     # Post-training magnitude pruning: zero out weights < prune_threshold * row_max before quantizing.
     # Creates true zeros in the int8 stream → zlib compresses dramatically better.
@@ -1184,6 +1189,8 @@ def main() -> None:
 
     training_time_ms = 0.0
     stop_after_step: int | None = None
+    swa_state: dict[str, Tensor] | None = None
+    swa_count = 0
     torch.cuda.synchronize()
     t0 = time.perf_counter()
 
@@ -1269,6 +1276,17 @@ def main() -> None:
             opt.step()
         zero_grad_all()
 
+        # SWA: collect checkpoints during late warmdown
+        if args.swa_enabled and scale < args.swa_start_frac and step % args.swa_every == 0:
+            if swa_state is None:
+                swa_state = {name: t.detach().cpu().clone() for name, t in base_model.state_dict().items()}
+                swa_count = 1
+                log0(f"swa:start step:{step}")
+            else:
+                for name, t in base_model.state_dict().items():
+                    swa_state[name] += t.detach().cpu()
+                swa_count += 1
+
         step += 1
         approx_training_time_ms = training_time_ms + 1000.0 * (time.perf_counter() - t0)
         should_log_train = (
@@ -1294,6 +1312,16 @@ def main() -> None:
         f"peak memory allocated: {torch.cuda.max_memory_allocated() // 1024 // 1024} MiB "
         f"reserved: {torch.cuda.max_memory_reserved() // 1024 // 1024} MiB"
     )
+
+    # Apply SWA before compression analysis and pruning
+    if args.swa_enabled and swa_state is not None and swa_count > 1:
+        log0(f"swa:applying averaged {swa_count} checkpoints")
+        current_state = base_model.state_dict()
+        avg_state = {
+            name: (tensor / swa_count).to(dtype=current_state[name].dtype)
+            for name, tensor in swa_state.items()
+        }
+        base_model.load_state_dict(avg_state, strict=True)
 
     # -----------------------------
     # FINAL COMPRESSION ANALYSIS
